@@ -140,6 +140,7 @@ struct CreatureInfo
     uint32  GossipMenuId;
     uint32  minlevel;
     uint32  maxlevel;
+    int32 exp;
     uint32  minhealth;
     uint32  maxhealth;
     uint32  minmana;
@@ -157,6 +158,7 @@ struct CreatureInfo
     uint32  attackpower;
     uint32  baseattacktime;
     uint32  rangeattacktime;
+    uint32  unit_class;                                     // enum Classes. Note only 4 classes are known for creatures.
     uint32  unit_flags;                                     // enum UnitFlags mask values
     uint32  dynamicflags;
     uint32  family;                                         // enum CreatureFamily values for type == CREATURE_TYPE_BEAST, or 0 in another cases
@@ -185,6 +187,8 @@ struct CreatureInfo
     char const* AIName;
     uint32  MovementType;
     uint32  InhabitType;
+    float   ModHealth;
+    float   ModMana;
     bool    RacialLeader;
     bool    RegenHealth;
     uint32  equipmentId;
@@ -214,6 +218,17 @@ struct CreatureInfo
     {
         return AIName;
     }
+};
+
+// Bases values for given Level and UnitClass
+struct CreatureBaseStats
+{
+    uint32  BaseHealth;
+    uint32  BaseMana;
+    float   BaseDamage;
+    float   BaseMeleeAttackPower;
+    float   BaseRangedAttackPower;
+    uint32  BaseArmor;
 };
 
 struct CreatureLocale
@@ -277,7 +292,6 @@ struct CreatureDataAddon
     uint32 guidOrEntry;
     uint32 path_id;
     uint32 mount;
-    uint32 bytes0;
     uint32 bytes1;
     uint32 bytes2;
     uint32 emote;

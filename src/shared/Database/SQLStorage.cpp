@@ -20,11 +20,11 @@
 
 extern Database WorldDatabase;
 
-const char CreatureInfosrcfmt[] = "iiiiiiiisssiiiiiiiiiifffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiisiilliiis";
-const char CreatureInfodstfmt[] = "iiiiiiiisssiiiiiiiiiifffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiisiilliiii";
-const char CreatureDataAddonInfofmt[] = "iiiiiiiiis";
+const char CreatureInfosrcfmt[] = "iiiiiiiisssiiiiiiiiiiifffiffiiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiisiifflliiis";
+const char CreatureInfodstfmt[] = "iiiiiiiisssiiiiiiiiiiifffiffiiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiisiifflliiii";
+const char CreatureDataAddonInfofmt[] = "iiiiiiiis";
 const char CreatureModelfmt[] = "iffbi";
-const char CreatureInfoAddonInfofmt[] = "iiiiiiiiis";
+const char CreatureInfoAddonInfofmt[] = "iiiiiiiis";
 const char EquipmentInfofmt[] = "iiii";
 const char EquipmentInfoRawfmt[] = "iiiiiiiiii";
 const char GameObjectInfosrcfmt[] = "iiissiifiiiiiiiiiiiiiiiiiiiiiiiiss";

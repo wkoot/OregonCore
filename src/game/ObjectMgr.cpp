@@ -612,6 +612,12 @@ void ObjectMgr::LoadCreatureTemplates()
                 continue;
             }
 
+            if (cInfo->unit_class != heroicInfo->unit_class)
+            {
+                sLog.outErrorDb("Creature (Entry: %u, class %u) has different `unit_class` in heroic mode (Entry: %u, class %u).",i, cInfo->unit_class, cInfo->HeroicEntry, heroicInfo->unit_class);
+                continue;
+            }
+
             if (cInfo->npcflag != heroicInfo->npcflag)
             {
                 sLog.outErrorDb("Creature (Entry: %u) listed in creature_template_substitution has different npcflag in heroic mode.", i);
@@ -682,6 +688,12 @@ void ObjectMgr::LoadCreatureTemplates()
                     const_cast<CreatureInfo*>(cInfo)->KillCredit[k] = 0;
                 }
             }
+        }
+
+        if (!cInfo->unit_class || ((1 << (cInfo->unit_class-1)) & CLASSMASK_ALL_CREATURES) == 0)
+        {
+            sLog.outErrorDb("Creature (Entry: %u) has invalid unit_class (%u) in creature_template. Set to 1 (UNIT_CLASS_WARRIOR).", cInfo->Entry, cInfo->unit_class);
+            const_cast<CreatureInfo*>(cInfo)->unit_class = UNIT_CLASS_WARRIOR;
         }
 
         if (cInfo->dmgschool >= MAX_SPELL_SCHOOL)
@@ -862,6 +874,77 @@ void ObjectMgr::LoadCreatureAddons()
         if (mCreatureDataMap.find(addon->guidOrEntry) == mCreatureDataMap.end())
             sLog.outErrorDb("Creature (GUID: %u) does not exist but has a record in creature_addon", addon->guidOrEntry);
     }
+}
+
+void ObjectMgr::LoadCreatureClassLevelStats()
+{
+    // initialize data array
+    memset(&m_creatureClassLvlStats, 0, sizeof(m_creatureClassLvlStats));
+
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT level, class, basehp0, basehp1, basemana, basearmor, attackpower, rangedattackpower, basedamage_exp0, basedamage_exp1 FROM creature_classlevelstats");
+
+    if (!result)
+    {
+        sLog.outErrorDb(">> Loaded 0 creature base stats. DB table `creature_classlevelstats` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 creatureClass               = fields[1].GetUInt32();
+        uint32 creatureLevel               = fields[0].GetUInt32();
+
+        if (creatureLevel == 0 || creatureLevel > DEFAULT_MAX_CREATURE_LEVEL)
+        {
+            sLog.outErrorDb("Found stats for creature level %u, incorrect level for this core. Skipped.", creatureLevel);
+            continue;
+        }
+
+        if (((1 << (creatureClass - 1)) & CLASSMASK_ALL_CREATURES) == 0)
+        {
+            sLog.outErrorDb("Creature base stats for level %u has invalid class %u. Skipped.", creatureLevel, creatureClass);
+            continue;
+        }
+
+        uint32  baseMana                   = fields[4].GetUInt32();
+        uint32  baseArmor                  = fields[5].GetUInt32();
+        float   baseMeleeAttackPower       = fields[6].GetFloat();
+        float   baseRangedAttackPower      = fields[7].GetFloat();
+
+
+        for (int i = 0; i <= MAX_EXPANSION; ++i)
+        {
+            CreatureBaseStats &cCLS = m_creatureClassLvlStats[creatureLevel][classToIndex[creatureClass]][i];
+
+            cCLS.BaseMana                   = baseMana;
+            cCLS.BaseMeleeAttackPower       = baseMeleeAttackPower;
+            cCLS.BaseRangedAttackPower      = baseRangedAttackPower;
+            cCLS.BaseArmor                  = baseArmor;
+
+            cCLS.BaseHealth = fields[2 + (i * 1)].GetUInt32();
+            cCLS.BaseDamage = fields[8 + (i * 1)].GetFloat();
+        }
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString(">> Loaded %u creature base stats", count);
+}
+
+CreatureBaseStats const* ObjectMgr::GetCreatureClassLvlStats(uint32 level, uint32 unitClass, int32 expansion) const
+{
+    if (expansion < 0)
+        return NULL;
+
+    CreatureBaseStats const* cCLS = &m_creatureClassLvlStats[level][classToIndex[unitClass]][expansion];
+
+    if (cCLS->BaseHealth != 0 && cCLS->BaseDamage != 0.0f)
+        return cCLS;
+
+    return NULL;
 }
 
 EquipmentInfo const* ObjectMgr::GetEquipmentInfo(uint32 entry)

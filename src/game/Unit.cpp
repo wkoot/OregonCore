@@ -6613,7 +6613,7 @@ bool Unit::HandleProcTriggerSpell(Unit* pVictim, uint32 damage, Aura* triggeredB
     // Combo points add triggers (need add combopoint only for main target, and after possible combopoints reset)
     case 15250: // Rogue Setup
         {
-            if (!pVictim || pVictim != getVictim())   // applied only for main target
+            if (!pVictim || (ToPlayer() && pVictim != ToPlayer()->GetSelectedUnit())) // applied only for main target
                 return false;
             break;                                   // continue normal case
         }
@@ -12749,11 +12749,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
                     CreatureInfo const* cinfo = ToCreature()->GetCreatureTemplate();
                     if (cinfo && cinfo->type == CREATURE_TYPE_DEMON)
                     {
-                        CreatureDataAddon const* cainfo = ToCreature()->GetCreatureAddon();
-                        if (cainfo && cainfo->bytes0 != 0)
-                            SetUInt32Value(UNIT_FIELD_BYTES_0, cainfo->bytes0);
-                        else
-                            RemoveFlag(UNIT_FIELD_BYTES_0, 2048);
+                        SetByteValue(UNIT_FIELD_BYTES_0, 1, uint8(cinfo->unit_class));
 
                         if (GetCharmInfo())
                             GetCharmInfo()->SetPetNumber(0, true);
