@@ -626,6 +626,12 @@ void Spell::prepareDataForTriggerSystem()
             break;
         case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Soul Fire triggers need do it
             if (m_spellInfo->SpellFamilyFlags & 0x0000800000000060LL) m_canTrigger = true;
+            if (m_spellInfo->SpellFamilyFlags & 0x0000008000000060LL)
+            {
+                m_procAttacker = PROC_FLAG_DONE_PERIODIC;
+                m_procVictim   = PROC_FLAG_TAKEN_PERIODIC;
+                m_canTrigger = true;
+            }
             break;
         case SPELLFAMILY_HUNTER:  // Hunter Explosive Trap Effect/Immolation Trap Effect/Frost Trap Aura/Snake Trap Effect
             if (m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL) m_canTrigger = true;
@@ -3697,7 +3703,7 @@ void Spell::TriggerSpell()
 SpellCastResult Spell::CheckCast(bool strict)
 {
     // check death state
-    if (!m_caster->IsAlive() && !m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE && !(m_spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD || (m_IsTriggeredSpell && !m_triggeredByAuraSpell)))
+    if (!m_caster->IsAlive() && !(m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE) && !(m_spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD || (m_IsTriggeredSpell && !m_triggeredByAuraSpell)))
         return SPELL_FAILED_CASTER_DEAD;
 
     // check cooldowns to prevent cheating
