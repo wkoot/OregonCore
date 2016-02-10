@@ -2573,15 +2573,6 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellEntry const* spellInf
             canBlock = false;
     }
 
-    // Check for victim casting spell OR victim under CC effect
-    // This check is not subject to unit type.
-    if (victim->IsNonMeleeSpellCast(false, false, true) || victim->HasUnitState(UNIT_STATE_CONTROLLED))
-    {
-        canDodge = false;
-        canParry = false;
-        canBlock = false;
-    }
-
     // Check creatures flags_extra for disable parry
     if (victim->GetTypeId() == TYPEID_UNIT)
     {
@@ -8278,6 +8269,10 @@ bool Unit::isSpellCrit(Unit* pVictim, SpellEntry const* spellProto, SpellSchoolM
                     crit_chance = GetUnitCriticalChance(attackType, pVictim);
                     crit_chance += (int32(GetMaxSkillValueForLevel(pVictim)) - int32(pVictim->GetDefenseSkillValue(this))) * 0.04f;
                     crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+
+                    // Autoshot must crit if target is sitting down and crit chance not 0
+                    if ((spellProto->AttributesEx4 & SPELL_ATTR4_AUTOSHOT) && pVictim->GetTypeId() == TYPEID_PLAYER && crit_chance > 0 && !pVictim->IsStandState())
+                        return true;
                 }
                 break;
             }
