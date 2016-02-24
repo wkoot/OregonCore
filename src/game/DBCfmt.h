@@ -18,7 +18,7 @@
 #ifndef DBCSFRM_H
 #define DBCSFRM_H
 
-const char AreaTableEntryfmt[] = "iiinixxxxxissssssssssssssssxixxxxxx";
+const char AreaTableEntryfmt[] = "iiinixxxxxissssssssssssssssxiiiiixx";
 const char AuctionHouseEntryfmt[] = "niiixxxxxxxxxxxxxxxxx";
 const char AreaTriggerEntryfmt[] = "niffffffff";
 const char BankBagSlotPricesEntryfmt[] = "ni";
@@ -71,7 +71,7 @@ const char SkillLineAbilityfmt[] = "niiiixxiiiiixxi";
 const char SoundEntriesfmt[] = "nxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char SpellCastTimefmt[] = "nixx";
 const char SpellDurationfmt[] = "niii";
-const char SpellEntryfmt[] = "nixiiiiiiiixiiiiiiiiiiiiiiiiiiiiiiiiiiiiifxiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiffffffiiiiiiiiiiiiiiiiiiiiifffiiiiiiiiiiiiiiifffixiixssssssssssssssssxssssssssssssssssxxxxxxxxxxxxxxxxxxssssssssssssssssxiiiiiiiiiixfffxxxiiii";
+const char SpellEntryfmt[] = "nixiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiifxiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiffffffiiiiiiiiiiiiiiiiiiiiifffiiiiiiiiiiiiiiifffixiixssssssssssssssssxssssssssssssssssxxxxxxxxxxxxxxxxxxssssssssssssssssxiiiiiiiiiixfffxxxiiii";
 const char SpellFocusObjectfmt[] = "nxxxxxxxxxxxxxxxxx";
 const char SpellItemEnchantmentfmt[] = "niiiiiixxxiiissssssssssssssssxiiii";
 const char SpellItemEnchantmentConditionfmt[] = "nbbbbbxxxxxbbbbbbbbbbiiiiiXXXXX";

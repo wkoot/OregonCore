@@ -67,7 +67,7 @@ struct ScriptAction
 // Map file format defines
 //******************************************
 static const uint32 MAP_MAGIC         = 0x5350414D; // SPAM
-static const uint32 MAP_VERSION_MAGIC = 0x362E3077; // 6.0w
+static const uint32 MAP_VERSION_MAGIC = 0x332E3176; // 6.0w
 static const uint32 MAP_AREA_MAGIC    = 0x41455241; // AERA
 static const uint32 MAP_HEIGHT_MAGIC  = 0x5447484D; // TGHM
 static const uint32 MAP_LIQUID_MAGIC  = 0x51494C4D; // QILM
@@ -132,11 +132,12 @@ enum ZLiquidStatus
     LIQUID_MAP_UNDER_WATER  = 0x00000008
 };
 
+// defined in DBC and left shifted for flag usage
 #define MAP_LIQUID_TYPE_NO_WATER    0x00
-#define MAP_LIQUID_TYPE_WATER       0x01
+#define MAP_LIQUID_TYPE_MAGMA       0x01
 #define MAP_LIQUID_TYPE_OCEAN       0x02
-#define MAP_LIQUID_TYPE_MAGMA       0x04
-#define MAP_LIQUID_TYPE_SLIME       0x08
+#define MAP_LIQUID_TYPE_SLIME       0x04
+#define MAP_LIQUID_TYPE_WATER       0x08
 
 #define MAP_ALL_LIQUIDS   (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME)
 
@@ -145,7 +146,8 @@ enum ZLiquidStatus
 
 struct LiquidData
 {
-    uint32 type;
+    uint32 type_flags;
+    uint32 entry;
     float  level;
     float  depth_level;
 };
@@ -178,8 +180,9 @@ class GridMap
         uint8   m_liquid_width;
         uint8   m_liquid_height;
         float   m_liquidLevel;
-        uint8*  m_liquid_type;
-        float*  m_liquid_map;
+        uint16* _liquidEntry;
+        uint8* _liquidFlags;
+        float*  _liquidMap;
 
         bool  loadAreaData(FILE* in, uint32 offset, uint32 size);
         bool  loadHeightData(FILE* in, uint32 offset, uint32 size);
