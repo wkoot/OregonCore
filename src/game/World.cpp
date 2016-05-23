@@ -65,6 +65,7 @@
 #include "DisableMgr.h"
 #include "ConditionMgr.h"
 #include "VMapManager2.h"
+#include "M2Stores.h"
 
 #include <ace/Dirent.h>
 
@@ -735,7 +736,9 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_START_ARENA_POINTS] = m_configs[CONFIG_MAX_ARENA_POINTS];
     }
 
+    // Custom Flight Path Config Options
     m_configs[CONFIG_ALL_TAXI_PATHS] = sConfig.GetBoolDefault("AllFlightPaths", false);
+    m_configs[CONFIG_INSTANT_TAXI] = sConfig.GetBoolDefault("InstantFlightPaths", false);
 
     m_configs[CONFIG_INSTANCE_IGNORE_LEVEL] = sConfig.GetBoolDefault("Instance.IgnoreLevel", false);
     m_configs[CONFIG_INSTANCE_IGNORE_RAID]  = sConfig.GetBoolDefault("Instance.IgnoreRaid", false);
@@ -1228,6 +1231,8 @@ void World::SetInitialWorldSettings()
  
     MMAP::MMapManager* mmmgr = MMAP::MMapFactory::createOrGetMMapManager();
     mmmgr->InitializeThreadUnsafe(mapIds);
+
+    LoadM2Cameras(m_dataPath);
 
     sConsole.SetLoadingLabel("Loading Script Names...");
     sObjectMgr.LoadScriptNames();

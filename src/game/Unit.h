@@ -881,12 +881,12 @@ class Unit : public WorldObject
         typedef std::set<AuraType> AuraTypeSet;
         typedef std::set<uint32> ComboPointHolderSet;
 
-        virtual ~Unit ();
+        ~Unit () override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
-        void CleanupsBeforeDelete();                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
+        void CleanupsBeforeDelete() override;                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
         DiminishingLevels GetDiminishing(DiminishingGroup  group);
         void IncrDiminishing(DiminishingGroup group);
@@ -900,7 +900,7 @@ class Unit : public WorldObject
         //target dependent checks
         uint32 GetSpellRadiusForTarget(Unit* target, const SpellRadiusEntry* radiusEntry);
 
-        virtual void Update(uint32 time);
+        void Update(uint32 time) override;
 
         void setAttackTimer(WeaponAttackType type, uint32 time)
         {
@@ -1778,8 +1778,8 @@ class Unit : public WorldObject
         void SetVisible(bool x);
 
         // common function for visibility checks for player/creatures with detection code
-        bool isValid() const { return WorldObject::isValid(); }       
-        void UpdateObjectVisibility(bool forced = true);
+        bool isValid() const override { return WorldObject::isValid(); }       
+        void UpdateObjectVisibility(bool forced = true) override;
 
         bool isInvisibleForAlive() const;
 
@@ -2054,10 +2054,7 @@ class Unit : public WorldObject
         {
             return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL;
         }
-        virtual float GetFollowAngle() const
-        {
-            return PET_FOLLOW_ANGLE;
-        }
+        virtual float GetFollowAngle() const { return static_cast<float>(M_PI/2); }
 
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag((MovementFlags)(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING)); }
         bool IsFalling() const;
@@ -2151,8 +2148,8 @@ class Unit : public WorldObject
 
         void DisableSpline();
 
-        bool IsAlwaysVisibleFor(WorldObject const* seer) const;
-        bool IsAlwaysDetectableFor(WorldObject const* seer) const;
+        bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
+        bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
 
     private:
         bool IsTriggeredAtSpellProcEvent(Unit* pVictim, Aura* aura, SpellEntry const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent);
