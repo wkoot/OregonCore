@@ -1775,7 +1775,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             // remove from old map now
             if (oldmap)
-                oldmap->RemoveFromMap(this, false);
+				oldmap->RemovePlayerFromMap(this, false);
 
             // new final coordinates
             float final_x = x;
@@ -2174,39 +2174,45 @@ bool Player::CanInteractWithQuestGiver(Object* questGiver)
 
 Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
 {
-    // unit checks
-    if (!guid || !IsInWorld() || isInFlight())
-        return NULL;
+	// unit checks
+	if (!guid)
+		return nullptr;
+
+	if (!IsInWorld())
+		return nullptr;
+
+	if (isInFlight())
+		return nullptr;
 
     // exist
-    Creature* unit = GetMap()->GetCreature(guid);
-    if (!unit)
-        return NULL;
-
-    // appropriate npc type
-    if (npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
-        return NULL;
+	Creature* creature = GetMap()->GetCreature(guid);
+	if (!creature)
+		return nullptr;
 
     // if a dead unit should be able to talk - the creature must be alive and have special flags
-    if (!unit->IsAlive())
-        return NULL;
+	if (!IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_GHOST_VISIBLE))
+		return nullptr;
 
-    if (IsAlive() && unit->isInvisibleForAlive())
-        return NULL;
+	if (IsAlive() && creature->isInvisibleForAlive())
+		return nullptr;
+
+	// appropriate npc type
+	if (npcflagmask && !creature->HasFlag(UNIT_NPC_FLAGS, npcflagmask))
+		return nullptr;
 
     // not allow interaction under control
-    if (unit->GetCharmerGUID())
-        return NULL;
+    if (creature->GetCharmerGUID())
+		return nullptr;
 
     // not enemy
-    if (unit->IsHostileTo(this))
-        return NULL;
+    if (creature->IsHostileTo(this))
+		return nullptr;
 
     // not too far
-    if (!unit->IsWithinDistInMap(this, INTERACTION_DISTANCE))
-        return NULL;
+    if (!creature->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+		return nullptr;
 
-    return unit;
+    return creature;
 }
 
 GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const
@@ -2239,7 +2245,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
                           go->GetGUIDLow(), GetName(), GetGUIDLow(), go->GetDistance(this));
         }
     }
-    return NULL;
+	return nullptr;
 }
 
 bool Player::IsUnderWater() const
@@ -2704,7 +2710,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     // cleanup unit flags (will be re-applied if need at aura load).
     RemoveFlag(UNIT_FIELD_FLAGS,
-               UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_ATTACKABLE_1 |
+               UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_NOT_ATTACKABLE_1 |
                UNIT_FLAG_PET_IN_COMBAT  | UNIT_FLAG_SILENCED     | UNIT_FLAG_PACIFIED         |
                UNIT_FLAG_STUNNED        | UNIT_FLAG_IN_COMBAT    | UNIT_FLAG_DISARMED         |
                UNIT_FLAG_CONFUSED       | UNIT_FLAG_FLEEING      | UNIT_FLAG_NOT_SELECTABLE   |
@@ -18094,7 +18100,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         return false;
     }
 
-    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+	if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return false;
 
     uint32 sourcenode = nodes[0];
@@ -18231,7 +18237,7 @@ void Player::CleanupAfterTaxiFlight()
 {
     m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
     Dismount();
-    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
+	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_TAXI_FLIGHT);
     getHostileRefManager().setOnlineOfflineState(true);
 }
 
