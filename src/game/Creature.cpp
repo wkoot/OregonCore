@@ -574,7 +574,7 @@ void Creature::Update(uint32 diff)
                     if (!players.isEmpty())
                         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
                         {
-                            if (Player* player = it->getSource())
+                            if (Player* player = it->GetSource())
                             {
                                 if (player->isGameMaster())
                                     continue;
@@ -1748,7 +1748,7 @@ bool Creature::isWorldBoss() const
     if (IsPet())
         return false;
 
-	return (GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_BOSS_MOB) != 0;
+    return (GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_BOSS_MOB) != 0;
 }
 
 SpellEntry const* Creature::reachWithSpellAttack(Unit* victim)
@@ -2150,7 +2150,7 @@ void Creature::SetInCombatWithZone()
 
     for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
     {
-        if (Player* pPlayer = i->getSource())
+        if (Player* pPlayer = i->GetSource())
         {
             if (pPlayer->isGameMaster())
                 continue;

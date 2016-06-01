@@ -1683,7 +1683,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             if (m_caster->GetDistance(unitTarget) <= (GetSpellMaxRange(m_spellInfo) - GetSpellRadius(m_spellInfo, effIndex, true)))
             {
-				if (unitTarget->GetTypeId() == TYPEID_UNIT && !(unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))) //if UNIT_FLAG_NOT_SELECTABLE than field is occuped
+                if (unitTarget->GetTypeId() == TYPEID_UNIT && !(unitTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))) //if UNIT_FLAG_NOT_SELECTABLE than field is occuped
                 {
                     //cast transform Field
                     if (m_caster)
@@ -2314,7 +2314,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
     // Vanish
     case 18461:
         {
-			m_caster->RemoveMovementImpairingAuras();
+            m_caster->RemoveMovementImpairingAuras();
             m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
 
             // if this spell is given to NPC it must handle rest by it's own AI
@@ -3207,10 +3207,10 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (damage < 0)
         return;
 
-	// Handle Mana Gems / Serpent-Coil Braid
-	if (m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags == 0x10000000000LL)
-		if (unitTarget->HasAura(37447, 0))
-			unitTarget->CastSpell(unitTarget, 37445, true);
+    // Handle Mana Gems / Serpent-Coil Braid
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags == 0x10000000000LL)
+        if (unitTarget->HasAura(37447, 0))
+            unitTarget->CastSpell(unitTarget, 37445, true);
 
     Powers power = Powers(m_spellInfo->EffectMiscValue[effIndex]);
 
@@ -6406,7 +6406,7 @@ void Spell::EffectMomentMove(SpellEffIndex effIndex)
     float dist = GetSpellRadius(m_spellInfo, effIndex, false);
 
     Position pos = m_targets.m_dstPos;
-    unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetDistance(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()), 0.0f);
+    pos = unitTarget->GetFirstCollisionPosition(unitTarget->GetDistance(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()), 0.0f);
     unitTarget->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), unitTarget == m_caster);
 }
 
@@ -7197,7 +7197,7 @@ void Spell::GetSummonPosition(uint32 i, Position& pos, float radius)
         case TARGET_MINION:
         case TARGET_DEST_CASTER_RANDOM:
             radius = std::max<float>(radius, m_caster->GetObjectSize());
-            m_caster->GetNearPosition(pos, radius * rand_norm(), rand_norm() * 2 * M_PI);
+            pos = m_caster->GetNearPosition(radius * rand_norm(), rand_norm() * 2 * M_PI);
             break;
         case TARGET_DEST_DEST_RANDOM:
         case TARGET_DEST_TARGET_RANDOM:

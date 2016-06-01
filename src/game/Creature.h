@@ -161,7 +161,7 @@ struct CreatureInfo
     uint32  unit_class;                                     // enum Classes. Note only 4 classes are known for creatures.
     uint32  unit_flags;                                     // enum UnitFlags mask values
     uint32  dynamicflags;
-    uint32  family;                                         // enum CreatureFamily values for type == CREATURE_TYPE_BEAST, or 0 in another cases
+    CreatureFamily family;                                  // enum CreatureFamily values for type == CREATURE_TYPE_BEAST, or 0 in another cases
     uint32  trainer_type;
     uint32  trainer_spell;
     uint32  classNum;
@@ -201,22 +201,22 @@ struct CreatureInfo
     // helpers
     SkillType GetRequiredLootSkill() const
     {
-		if (type_flags & CREATURE_TYPE_FLAG_HERB_SKINNING_SKILL)
+        if (type_flags & CREATURE_TYPE_FLAG_HERB_SKINNING_SKILL)
             return SKILL_HERBALISM;
-		else if (type_flags & CREATURE_TYPE_FLAG_MINING_SKINNING_SKILL)
+        else if (type_flags & CREATURE_TYPE_FLAG_MINING_SKINNING_SKILL)
             return SKILL_MINING;
-		else if (type_flags & CREATURE_TYPE_FLAG_ENGINEERING_SKINNING_SKILL)
-			return SKILL_ENGINEERING;
+        else if (type_flags & CREATURE_TYPE_FLAG_ENGINEERING_SKINNING_SKILL)
+            return SKILL_ENGINEERING;
         else
             return SKILL_SKINNING;                          // normal case
     }
 
     bool isTameable() const
     {
-		if (type != CREATURE_TYPE_BEAST || family == 0 || (type_flags & CREATURE_TYPE_FLAG_TAMEABLE_PET) == 0)
-			return false;
+        if (type != CREATURE_TYPE_BEAST || family == CREATURE_FAMILY_NONE || (type_flags & CREATURE_TYPE_FLAG_TAMEABLE_PET) == 0)
+            return false;
 
-		return true;
+        return true;
     }
 
     std::string GetAIName() const

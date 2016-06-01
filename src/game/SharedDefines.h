@@ -587,7 +587,7 @@ enum SpellAttr4
     SPELL_ATTR4_UNK20                            = 0x00100000, // 20
     SPELL_ATTR4_STANCES                          = 0x00200000, // 21 stances, shapeshifts, etc.
     SPELL_ATTR4_UNK22                            = 0x00400000, // 22 used by seal of command (20424,42058)
-	SPELL_ATTR4_CANT_TRIGGER_ITEM_SPELLS		 = 0x00800000, // 23 Used by spells that cannot trigger item procs such as enchants
+    SPELL_ATTR4_CANT_TRIGGER_ITEM_SPELLS         = 0x00800000, // 23 Used by spells that cannot trigger item procs such as enchants
     SPELL_ATTR4_AUTOSHOT                         = 0x01000000, // 24
     SPELL_ATTR4_SCALE_PET                        = 0x02000000, // 25 pet scaling auras
     SPELL_ATTR4_CAST_ONLY_IN_OUTLAND             = 0x04000000, // 26 Can only be used in Outland.
@@ -2053,6 +2053,7 @@ uint32 const CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD = (1 << (CREATURE_TYPE_HUMANOI
 
 enum CreatureFamily
 {
+    CREATURE_FAMILY_NONE           = 0,
     CREATURE_FAMILY_WOLF           = 1,
     CREATURE_FAMILY_CAT            = 2,
     CREATURE_FAMILY_SPIDER         = 3,

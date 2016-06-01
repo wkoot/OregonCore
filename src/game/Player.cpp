@@ -1457,7 +1457,7 @@ bool Player::BuildEnumData(QueryResult_AutoPtr result, WorldPacket*  p_data)
     {
         uint32 petDisplayId = 0;
         uint32 petLevel   = 0;
-        uint32 petFamily  = 0;
+        CreatureFamily petFamily = CREATURE_FAMILY_NONE;
 
         // show pet at selection character in character list only for non-ghost character
         if (result && !(playerFlags & PLAYER_FLAGS_GHOST) && (pClass == CLASS_WARLOCK || pClass == CLASS_HUNTER))
@@ -1775,7 +1775,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             // remove from old map now
             if (oldmap)
-				oldmap->RemovePlayerFromMap(this, false);
+                oldmap->RemovePlayerFromMap(this, false);
 
             // new final coordinates
             float final_x = x;
@@ -2174,43 +2174,43 @@ bool Player::CanInteractWithQuestGiver(Object* questGiver)
 
 Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
 {
-	// unit checks
-	if (!guid)
-		return nullptr;
+    // unit checks
+    if (!guid)
+        return nullptr;
 
-	if (!IsInWorld())
-		return nullptr;
+    if (!IsInWorld())
+        return nullptr;
 
-	if (isInFlight())
-		return nullptr;
+    if (isInFlight())
+        return nullptr;
 
     // exist
-	Creature* creature = GetMap()->GetCreature(guid);
-	if (!creature)
-		return nullptr;
+    Creature* creature = GetMap()->GetCreature(guid);
+    if (!creature)
+        return nullptr;
 
     // if a dead unit should be able to talk - the creature must be alive and have special flags
-	if (!IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_GHOST_VISIBLE))
-		return nullptr;
+    if (!IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_GHOST_VISIBLE))
+        return nullptr;
 
-	if (IsAlive() && creature->isInvisibleForAlive())
-		return nullptr;
+    if (IsAlive() && creature->isInvisibleForAlive())
+        return nullptr;
 
-	// appropriate npc type
-	if (npcflagmask && !creature->HasFlag(UNIT_NPC_FLAGS, npcflagmask))
-		return nullptr;
+    // appropriate npc type
+    if (npcflagmask && !creature->HasFlag(UNIT_NPC_FLAGS, npcflagmask))
+        return nullptr;
 
     // not allow interaction under control
     if (creature->GetCharmerGUID())
-		return nullptr;
+        return nullptr;
 
     // not enemy
     if (creature->IsHostileTo(this))
-		return nullptr;
+        return nullptr;
 
     // not too far
     if (!creature->IsWithinDistInMap(this, INTERACTION_DISTANCE))
-		return nullptr;
+        return nullptr;
 
     return creature;
 }
@@ -2245,7 +2245,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
                           go->GetGUIDLow(), GetName(), GetGUIDLow(), go->GetDistance(this));
         }
     }
-	return nullptr;
+    return nullptr;
 }
 
 bool Player::IsUnderWater() const
@@ -13394,12 +13394,8 @@ void Player::CompleteQuest(uint32 quest_id)
             SetQuestSlotState(log_slot, QUEST_STATE_COMPLETE);
 
         if (Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id))
-        {
             if (qInfo->HasFlag(QUEST_FLAGS_AUTO_REWARDED))
                 RewardQuest(qInfo, 0, this, false);
-            else
-                SendQuestComplete(quest_id);
-        }
     }
 }
 
@@ -14035,7 +14031,7 @@ bool Player::CanShareQuest(uint32 quest_id) const
 
             // Pooled daily quests that aren't available should not be shareable
             if (sPoolMgr.IsPartOfAPool<Quest>(quest_id) && !sPoolMgr.IsSpawnedObject<Quest>(quest_id))
-				return false;
+                return false;
 
             return true;
         }
@@ -14132,7 +14128,7 @@ void Player::GroupEventHappens(uint32 questId, WorldObject const* pEventObject)
     {
         for (GroupReference* itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            Player* pGroupGuy = itr->getSource();
+            Player* pGroupGuy = itr->GetSource();
 
             // for any leave or dead (with not released body) group member at appropriate distance
             if (pGroupGuy && pGroupGuy->IsAtGroupRewardDistance(pEventObject) && !pGroupGuy->GetCorpse())
@@ -18100,7 +18096,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         return false;
     }
 
-	if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return false;
 
     uint32 sourcenode = nodes[0];
@@ -18237,7 +18233,7 @@ void Player::CleanupAfterTaxiFlight()
 {
     m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
     Dismount();
-	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_TAXI_FLIGHT);
+    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_TAXI_FLIGHT);
     getHostileRefManager().setOnlineOfflineState(true);
 }
 
@@ -20128,7 +20124,7 @@ void Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
 
             for (GroupReference* itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
             {
-                Player* pGroupGuy = itr->getSource();
+                Player* pGroupGuy = itr->GetSource();
                 if (!pGroupGuy)
                     continue;
 
@@ -20213,7 +20209,7 @@ void Player::RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewar
     {
         for (GroupReference* itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            Player* pGroupGuy = itr->getSource();
+            Player* pGroupGuy = itr->GetSource();
             if (!pGroupGuy)
                 continue;
 
@@ -20473,7 +20469,7 @@ Player* Player::GetNextRandomRaidMember(float radius)
 
     for (GroupReference* itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        Player* Target = itr->getSource();
+        Player* Target = itr->GetSource();
 
         // IsHostileTo check duel and controlled by enemy
         if (Target && Target != this && IsWithinDistInMap(Target, radius) &&
