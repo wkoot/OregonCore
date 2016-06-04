@@ -1587,13 +1587,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     SpellSpecific spellSpec = GetSpellSpecific(spellId_1);
     switch (spellSpec)
     {
-        case SPELL_SPECIFIC_SEAL:
-        case SPELL_SPECIFIC_AURA:
         case SPELL_SPECIFIC_STING:
         case SPELL_SPECIFIC_CURSE:
         case SPELL_SPECIFIC_ASPECT:
-        case SPELL_SPECIFIC_JUDGEMENT:
         case SPELL_SPECIFIC_WARLOCK_CORRUPTION:
+        case SPELL_SPECIFIC_JUDGEMENT:
             return sameCaster == (spellSpec == GetSpellSpecific(spellId_2));
         default:
             break;
