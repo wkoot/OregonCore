@@ -1008,7 +1008,7 @@ class Player : public Unit, public GridObject<Player>
             if (on) m_ExtraFlags |= PLAYER_EXTRA_ACCEPT_WHISPERS;
             else m_ExtraFlags &= ~PLAYER_EXTRA_ACCEPT_WHISPERS;
         }
-        bool isGameMaster() const
+        bool IsGameMaster() const
         {
             return m_ExtraFlags & PLAYER_EXTRA_GM_ON;
         }
@@ -2133,7 +2133,8 @@ class Player : public Unit, public GridObject<Player>
         }
         uint32 GetCorpseReclaimDelay(bool pvp) const;
         void UpdateCorpseReclaimDelay();
-        void SendCorpseReclaimDelay(bool load = false);
+        int32 CalculateCorpseReclaimDelay(bool load = false);
+        void SendCorpseReclaimDelay(uint32 delay);
 
         uint32 GetShieldBlockValue() const override;                 // overwrite Unit version (virtual)
         bool CanParry() const

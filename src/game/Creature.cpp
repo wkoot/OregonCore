@@ -441,7 +441,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     // checked and error show at loading templates
     if (FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(cInfo->faction))
     {
-        if (factionTemplate->factionFlags & FACTION_TEMPLATE_FLAG_PVP)
+        if (factionTemplate->factionFlags & FACTION_TEMPLATE_FLAG_PVP || IsPvP()) // PvP state may be set in UnitFlags.. Prevent overwrite
             SetPvP(true);
         else
             SetPvP(false);
@@ -573,7 +573,7 @@ void Creature::Update(uint32 diff)
                         {
                             if (Player* player = it->GetSource())
                             {
-                                if (player->isGameMaster())
+                                if (player->IsGameMaster())
                                     continue;
 
                                 if (player->IsAlive() && this->IsHostileTo(player))
@@ -885,7 +885,7 @@ bool Creature::IsTrainerOf(Player* pPlayer, bool msg) const
         if (GetCreatureTemplate()->race && pPlayer->getRace() != GetCreatureTemplate()->race)
         {
             // Allowed to train if exalted
-            if (FactionTemplateEntry const* faction_template = getFactionTemplateEntry())
+            if (FactionTemplateEntry const* faction_template = GetFactionTemplateEntry())
             {
                 if (pPlayer->GetReputationRank(faction_template->faction) == REP_EXALTED)
                     return true;
@@ -2145,7 +2145,7 @@ void Creature::SetInCombatWithZone()
     {
         if (Player* pPlayer = i->GetSource())
         {
-            if (pPlayer->isGameMaster())
+            if (pPlayer->IsGameMaster())
                 continue;
 
             if (pPlayer->IsAlive())

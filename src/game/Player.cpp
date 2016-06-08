@@ -809,7 +809,7 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
 
 void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 {
-    if (!IsAlive() || isGameMaster())
+    if (!IsAlive() || IsGameMaster())
         return;
 
     // Absorb, resist some environmental damage type
@@ -4158,7 +4158,10 @@ void Player::BuildPlayerRepop()
     // BG - remove insignia related
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
-    //    SendCorpseReclaimDelay();
+    int32 corpseReclaimDelay = CalculateCorpseReclaimDelay();
+
+    if (corpseReclaimDelay >= 0)
+        SendCorpseReclaimDelay(corpseReclaimDelay);
 
     // to prevent cheating
     corpse->ResetGhostTime();
@@ -4270,7 +4273,10 @@ void Player::KillPlayer()
     m_deathTimer = 6 * MINUTE * IN_MILLISECONDS;
 
     UpdateCorpseReclaimDelay();                             // dependent at use SetDeathPvP() call before kill
-    SendCorpseReclaimDelay();
+    int32 corpseReclaimDelay = CalculateCorpseReclaimDelay();
+
+    if (corpseReclaimDelay >= 0)
+        SendCorpseReclaimDelay(corpseReclaimDelay);
 
     // don't create corpse at this moment, player might be falling
 
@@ -5774,7 +5780,7 @@ void Player::CheckAreaExploreAndOutdoor()
     bool isOutdoor;
     uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
 
-    if (!isOutdoor && !isGameMaster())
+    if (!isOutdoor && !IsGameMaster())
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
 
     /* Process passive spells which 'works only while outdoors';
@@ -9780,7 +9786,7 @@ uint8 Player::CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool swap, boo
                 return EQUIP_ERR_NO_EQUIPMENT_SLOT_AVAILABLE;
 
             // check unique-equipped on item
-            if (pProto->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED)
+            if (pProto->Flags & ITEM_PROTO_FLAG_UNIQUE_EQUIPPED)
             {
                 // there is an equip limit on this item
                 Item* tItem = GetItemOrItemWithGemEquipped(pProto->ItemId);
@@ -9799,7 +9805,7 @@ uint8 Player::CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool swap, boo
                     continue;
 
                 ItemTemplate const* pGem = sObjectMgr.GetItemTemplate(enchantEntry->GemID);
-                if (pGem && (pGem->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED))
+                if (pGem && (pGem->Flags & ITEM_PROTO_FLAG_UNIQUE_EQUIPPED))
                 {
                     Item* tItem = GetItemOrItemWithGemEquipped(enchantEntry->GemID);
                     if (tItem && (!swap || tItem->GetSlot() != eslot))
@@ -10700,7 +10706,7 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
                 DestroyItem(slot, i, update);
         }
 
-        if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
+        if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
 
         RemoveEnchantmentDurations(pItem);
@@ -10934,7 +10940,7 @@ void Player::DestroyConjuredItems(bool update)
         Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (pItem && pItem->GetProto() &&
             (pItem->GetProto()->Class == ITEM_CLASS_CONSUMABLE) &&
-            (pItem->GetProto()->Flags & ITEM_FLAGS_CONJURED))
+            (pItem->GetProto()->Flags & ITEM_PROTO_FLAG_CONJURED))
             DestroyItem(INVENTORY_SLOT_BAG_0, i, update);
     }
 
@@ -10949,7 +10955,7 @@ void Player::DestroyConjuredItems(bool update)
                 Item* pItem = pBag->GetItemByPos(j);
                 if (pItem && pItem->GetProto() &&
                     (pItem->GetProto()->Class == ITEM_CLASS_CONSUMABLE) &&
-                    (pItem->GetProto()->Flags & ITEM_FLAGS_CONJURED))
+                    (pItem->GetProto()->Flags & ITEM_PROTO_FLAG_CONJURED))
                     DestroyItem(i, j, update);
             }
         }
@@ -10961,7 +10967,7 @@ void Player::DestroyConjuredItems(bool update)
         Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (pItem && pItem->GetProto() &&
             (pItem->GetProto()->Class == ITEM_CLASS_CONSUMABLE) &&
-            (pItem->GetProto()->Flags & ITEM_FLAGS_CONJURED))
+            (pItem->GetProto()->Flags & ITEM_PROTO_FLAG_CONJURED))
             DestroyItem(INVENTORY_SLOT_BAG_0, i, update);
     }
 }
@@ -15210,7 +15216,7 @@ void Player::_LoadInventory(QueryResult_AutoPtr result, uint32 timediff)
             }
 
             // "Conjured items disappear if you are logged out for more than 15 minutes"
-            if (timediff > 15 * MINUTE && item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_CONJURED))
+            if (timediff > 15 * MINUTE && proto->Flags & ITEM_PROTO_FLAG_CONJURED)
             {
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 item->FSetState(ITEM_REMOVED);
@@ -15967,7 +15973,7 @@ void Player::ConvertInstancesToGroup(Player* player, Group* group, uint64 player
 
 bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report)
 {
-    if (!isGameMaster() && ar)
+    if (!IsGameMaster() && ar)
     {
         uint8 LevelMin = 0;
         uint8 LevelMax = 0;
@@ -17171,7 +17177,7 @@ void Player::Whisper(const std::string& text, uint32 language, Player* rPlayer)
         GetSession()->SendPacket(&data);
     }
 
-    if (!isAcceptWhispers() && !(isGameMaster() && rPlayer->isGameMaster()))
+    if (!isAcceptWhispers() && !(IsGameMaster() && rPlayer->IsGameMaster()))
     {
         SetAcceptWhispers(true);
         ChatHandler(this).SendSysMessage(LANG_COMMAND_WHISPERON);
@@ -18140,7 +18146,7 @@ uint32 Player::GetMaxPersonalArenaRatingRequirement()
 void Player::UpdateHomebindTime(uint32 time)
 {
     // GMs never get homebind timer online
-    if (m_InstanceValid || isGameMaster())
+    if (m_InstanceValid || IsGameMaster())
     {
         if (m_HomebindTimer)                                 // instance valid, but timer not reset
         {
@@ -18179,7 +18185,7 @@ void Player::UpdateHomebindTime(uint32 time)
 void Player::UpdatePvPState(bool onlyFFA)
 {
     // @todo should we always synchronize UNIT_FIELD_BYTES_2, 1 of controller and controlled?
-    if (!pvpInfo.inNoPvPArea && !isGameMaster()
+    if (!pvpInfo.inNoPvPArea && !IsGameMaster()
         && (pvpInfo.inFFAPvPArea || sWorld.IsFFAPvPRealm()))
     {
         if (!IsFFAPvP())
@@ -18471,7 +18477,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
         // call after remove to be sure that player resurrected for correct cast
-        if (bg->isBattleground() && !isGameMaster() && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))
+        if (bg->isBattleground() && !IsGameMaster() && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))
         {
             if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN)
             {
@@ -19004,7 +19010,10 @@ void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
 
 void Player::ApplyEquipCooldown(Item* pItem)
 {
-    for (uint8 i = 0; i < 5; ++i)
+    if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_PROTO_FLAG_NO_EQUIP_COOLDOWN))
+        return;
+
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         _Spell const& spellData = pItem->GetProto()->Spells[i];
 
@@ -19018,7 +19027,7 @@ void Player::ApplyEquipCooldown(Item* pItem)
 
         AddSpellCooldown(spellData.SpellId, pItem->GetEntry(), time(NULL) + 30);
 
-        WorldPacket data(SMSG_ITEM_COOLDOWN, 12);
+        WorldPacket data(SMSG_ITEM_COOLDOWN, 8 + 4);
         data << pItem->GetGUID();
         data << uint32(spellData.SpellId);
         GetSession()->SendPacket(&data);
@@ -19303,7 +19312,7 @@ uint32 Player::GetBattlegroundQueueIdFromLevel() const
 
 float Player::GetReputationPriceDiscount(Creature const* creature) const
 {
-    FactionTemplateEntry const* vendor_faction = creature->getFactionTemplateEntry();
+    FactionTemplateEntry const* vendor_faction = creature->GetFactionTemplateEntry();
     if (!vendor_faction || !vendor_faction->faction)
         return 1.0f;
 
@@ -19828,7 +19837,7 @@ void Player::SetClientControl(Unit* target, bool allowMove)
 void Player::UpdateZoneDependentAuras(uint32 newZone)
 {
     // remove new continent flight forms
-    if (!isGameMaster() &&
+    if (!IsGameMaster() &&
         GetVirtualMapForMapAndZone(GetMapId(), newZone) != 530)
     {
         RemoveSpellsCausingAura(SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED);
@@ -19941,25 +19950,21 @@ void Player::UpdateCorpseReclaimDelay()
         m_deathExpireTime = now + DEATH_EXPIRE_STEP;
 }
 
-void Player::SendCorpseReclaimDelay(bool load)
+int32 Player::CalculateCorpseReclaimDelay(bool load)
 {
     Corpse* corpse = GetCorpse();
     if (load && !corpse)
-        return;
+        return -1;
 
-    bool pvp;
-    if (corpse)
-        pvp = (corpse->GetType() == CORPSE_RESURRECTABLE_PVP);
-    else
-        pvp = (m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH);
+    bool pvp = corpse ? corpse->GetType() == CORPSE_RESURRECTABLE_PVP : m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH;
 
     uint32 delay;
     if (load)
     {
         if (corpse->GetGhostTime() > m_deathExpireTime)
-            return;
+            return -1;
 
-        uint32 count;
+        uint64 count = 0;
         if ((pvp && sWorld.getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP)) ||
             (!pvp && sWorld.getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE)))
         {
@@ -19967,25 +19972,25 @@ void Player::SendCorpseReclaimDelay(bool load)
             if (count >= MAX_DEATH_COUNT)
                 count = MAX_DEATH_COUNT - 1;
         }
-        else
-            count = 0;
 
         time_t expected_time = corpse->GetGhostTime() + copseReclaimDelay[count];
-
         time_t now = time(NULL);
+
         if (now >= expected_time)
-            return;
+            return -1;
 
         delay = expected_time - now;
     }
     else
         delay = GetCorpseReclaimDelay(pvp);
 
-    if (!delay) return;
+    return delay * IN_MILLISECONDS;
+}
 
-    //! corpse reclaim delay 30 * 1000ms or longer at often deaths
+void Player::SendCorpseReclaimDelay(uint32 delay)
+{
     WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
-    data << uint32(delay * IN_MILLISECONDS);
+    data << uint32(delay);
     GetSession()->SendPacket(&data);
 }
 
@@ -20086,7 +20091,15 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
 
         if (liquid && liquid->SpellId)
-            AddAura(liquid->SpellId, this);
+        {
+            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            {
+                if (!HasAura(liquid->SpellId))
+                    CastSpell(this, liquid->SpellId, true);
+            }
+            else
+                RemoveAurasDueToSpell(liquid->SpellId);
+        }
 
         _lastLiquid = liquid;
     }
@@ -20171,7 +20184,7 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
 
     //Players with low fall distance, Feather Fall or physical immunity (charges used) are ignored
     // 14.57 can be calculated by resolving damageperc formular below to 0
-    if (z_diff >= 14.57f && !isDead() && !isGameMaster() &&
+    if (z_diff >= 14.57f && !isDead() && !IsGameMaster() &&
         !HasAuraType(SPELL_AURA_HOVER) && !HasAuraType(SPELL_AURA_FEATHER_FALL) &&
         !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL, true))
     {
